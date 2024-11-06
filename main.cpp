@@ -20,11 +20,11 @@ int main() {
     try {
         IloModel model(env);
 
-        // Problem parameters
+        // H-CVRP-MV Problem parameters
         const int n = 10;      // Number of nodes (including depot)
-        const int m = 4;       // Number of vehicles
-        const int MAXV = 4;    // Maximum number of vehicles allowed
-        const int MINV = 0;    // Minimum number of vehicles allowed
+        const int m = 4;       // Number of available vehicles
+        const int MAXV = 4;    // Maximum number of vehicles allowed to use
+        const int MINV = 0;    // Minimum number of vehicles allowed to use
 
         vector<int> q = { 0, 3, 4, 2, 7, 5, 3, 2, 7, 2 }; // Demand at each node
         vector<int> Q = { 10, 10, 15, 20 }; // Capacity of each vehicle
@@ -84,7 +84,7 @@ int main() {
         model.add(IloMinimize(env, objective)); objective.end();
 
         // Constraints
-        // 1. Each vehicle leaves the depot at most once
+        // 1. Each vehicle leaves the depot at most once (avoid multiple trips for a same vehicle)
         for (int k = 0; k < m; k++) {
             IloExpr expression1(env);
             for (int i = 1; i < n; i++) expression1 += X[0][i][k];
@@ -98,7 +98,7 @@ int main() {
                 model.add(expression2 == 0); expression2.end();
         }
 
-        // 3. Each customer is visited exactly once by any vehicle
+        // 3. Each customer is visited exactly once (demand satisfaction & visit uniqueness)
         for (int j = 1; j < n; j++) {
             IloExpr expression3(env);
             for (int k = 0; k < m; k++) for (int i = 0; i < n; i++) if (i != j)
